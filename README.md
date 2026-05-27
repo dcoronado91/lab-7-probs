@@ -1,4 +1,4 @@
-# Laboratorios 7 y 8 — MM3014 Teoría de Probabilidades
+# Laboratorios 7, 8 y 9 — MM3014 Teoría de Probabilidades
 ## Simulación Monte Carlo: Álbum Panini FIFA 2026
 
 **Curso:** MM3014 Teoría de Probabilidades  
@@ -10,7 +10,7 @@
 
 ## Descripción general
 
-Simulación de Monte Carlo aplicada al problema del coleccionista (_coupon collector problem_) usando como contexto el álbum de estampas Panini del Mundial FIFA 2026. Se modela la compra secuencial de sobres con N=100 estampas distintas y S=7 estampas por sobre.
+Simulación de Monte Carlo aplicada al problema del coleccionista (_coupon collector problem_) usando como contexto el álbum de estampas Panini del Mundial FIFA 2026. Los laboratorios 7 y 8 usan un álbum simplificado N=100 estampas, S=7 por sobre; el laboratorio 9 escala al álbum real N=980.
 
 Los laboratorios avanzan progresivamente:
 
@@ -20,6 +20,7 @@ Los laboratorios avanzan progresivamente:
 | 7 | 2 | Probabilidad de éxito en función del número de sobres M |
 | 8 | 3 | Restricción de presupuesto y comparación de estrategias |
 | 8 | 4 | Mecanismo de intercambio de repetidas (K repetidas → 1 nueva) |
+| 9 | 5 | Álbum real N=980: costo, presupuesto, estrategias, intercambio y sensibilidad |
 
 ---
 
@@ -32,11 +33,20 @@ lab-probs/
 ├── etapa2.py                          # Script Etapa 2
 ├── etapa2_probabilidad_exito.png      # Gráfica Etapa 2
 ├── laboratorio8_panini.ipynb          # Notebook Lab 8 (Etapas 3 y 4)
+├── etapa3.py                          # Script Etapa 3
+├── etapa4.py                          # Script Etapa 4
 ├── etapa3_completado_vs_no.png        # Gráfica Etapa 3 — completó vs. no completó
 ├── etapa3_comparacion_estrategias.png # Gráfica Etapa 3 — comparación de estrategias
 ├── etapa4a_histogramas_K.png          # Gráfica Etapa 4A — histogramas por K
 ├── etapa4b_prob_vs_M.png              # Gráfica Etapa 4B — P(completar) vs M por K
 ├── etapa4_rendimiento_marginal_K.png  # Gráfica Etapa 4 — rendimiento marginal
+├── laboratorio9_panini.ipynb          # Notebook Lab 9 (Etapa 5)
+├── etapa5.py                          # Script Etapa 5 — álbum real N=980
+├── pregunta1.png                      # Distribución de sobres para completar N=980
+├── pregunta2.png                      # P(completar) según presupuesto
+├── pregunta3.png                      # Estrategia óptima cajas + sueltos con Q10,000
+├── pregunta4.png                      # Efecto del intercambio K=5
+├── pregunta5.png                      # Sensibilidad al tamaño del sobre S
 └── README.md                          # Este archivo
 ```
 
@@ -141,14 +151,114 @@ Simula la compra secuencial de sobres hasta agotar el presupuesto o completar el
 
 ---
 
+## Laboratorio 9
+
+### Etapa 5 — Álbum real del Mundial 2026 (N=980)
+
+> Escala la simulación al álbum oficial Panini del Mundial FIFA 2026: **980 estampas distintas**, **7 estampas por sobre**, precio Q 9.50/sobre, caja de 104 sobres a Q 975.
+
+| Parámetro | Valor |
+|---|---|
+| N (estampas distintas) | 980 |
+| S (estampas por sobre) | 7 |
+| Precio por sobre | Q 9.50 |
+| Precio por caja (104 sob.) | Q 975 |
+| Semilla | 2026 |
+
+La implementación usa arrays booleanos de NumPy (`np.zeros(N, dtype=bool)`) en lugar de conjuntos Python para garantizar eficiencia con N=980.
+
+---
+
+#### Pregunta 1 — ¿Cuántos sobres y cuánto dinero para completar el álbum?
+
+**R = 500 simulaciones**
+
+Estima la distribución del número de sobres necesarios para coleccionar las 980 estampas. Compara la media simulada con el valor teórico $E[T] = \frac{N}{S} \cdot H_N$.
+
+**Resultados:**
+
+| Métrica | Valor |
+|---|---|
+| E[sobres] simulado | ~1,037–1,040 |
+| E[T] teórico | 1,045.1 |
+| Costo esperado | ~Q 9,850–9,880 |
+| Mediana | ~1,000–1,010 sobres |
+| Percentil 90 | ~1,255–1,283 sobres |
+
+---
+
+#### Pregunta 2 — ¿Con qué presupuesto hay ≥ 50%, 75% y 90% de probabilidad?
+
+**R = 300 simulaciones por punto · presupuestos Q4,000 a Q14,000**
+
+Barre distintos presupuestos y estima la fracción de simulaciones que completan el álbum con ese gasto.
+
+**Resultados:**
+
+| Umbral | Presupuesto mínimo |
+|---|---|
+| P ≥ 50% | Q 10,000 |
+| P ≥ 75% | Q 11,000 |
+| P ≥ 90% | Q 12,000–12,500 |
+
+---
+
+#### Pregunta 3 — Con Q10,000, ¿qué combinación cajas + sueltos maximiza P(completar)?
+
+**R = 300 simulaciones por combinación · 11 estrategias (0–10 cajas)**
+
+Para cada número de cajas compradas primero, calcula cuántos sueltos adicionales caben en Q10,000 y simula la probabilidad de completar.
+
+**Resultado:** la combinación de **7 cajas + sueltos adicionales** (~334 sueltos, total ~1,062 sobres) maximiza P ≈ 0.65.
+
+---
+
+#### Pregunta 4 — ¿Cuánto ahorra el intercambio K=5 en sobres y quetzales?
+
+**R = 300 simulaciones · K = 5**
+
+Aplica el mecanismo de canje (5 repetidas → 1 estampa nueva) y compara el número medio de sobres con y sin intercambio.
+
+**Resultados:**
+
+| Escenario | Sobres promedio | Costo aprox. |
+|---|---|---|
+| Sin intercambio | ~1,053 | ~Q 10,000 |
+| Con K=5 | ~281 | ~Q 2,670 |
+| **Ahorro** | **~773 sobres** | **~Q 7,340 (73%)** |
+
+---
+
+#### Pregunta 5 — ¿Cómo cambia el costo al variar el tamaño del sobre S (5 a 9)?
+
+**R = 300 simulaciones por valor de S**
+
+Evalúa cómo el número de estampas por sobre afecta el costo total esperado, manteniendo N=980 fijo.
+
+**Resultados:**
+
+| S | E[sobres] | Costo aprox. | vs S=7 |
+|---|---|---|---|
+| 5 | ~1,456 | ~Q 13,830 | referencia |
+| 6 | ~1,209 | ~Q 11,490 | referencia |
+| 7 | ~1,066 | ~Q 10,125 | base |
+| 8 | ~908 | ~Q 8,625 | −14.8% |
+| 9 | ~816 | ~Q 7,750 | −23.5% |
+
+---
+
 ## Teoría
 
 **Valor esperado teórico (coupon collector con sobres de S items):**
 
 $$E[\text{sobres}] = \frac{N}{S} \cdot H_N, \quad H_N = \sum_{k=1}^{N}\frac{1}{k} \approx \ln N + \gamma$$
 
-con $\gamma \approx 0.5772$ (constante de Euler-Mascheroni).  
-Para N=100, S=7: $H_{100} \approx 5.187$, $E[\text{sobres}] \approx 74.04$, $E[\text{repetidas}] \approx 418.25$.
+con $\gamma \approx 0.5772$ (constante de Euler-Mascheroni).
+
+| Álbum | N | S | $H_N$ | $E[\text{sobres}]$ | $E[\text{repetidas}]$ |
+|---|---|---|---|---|---|
+| Simplificado (Labs 7–8) | 100 | 7 | ≈ 5.187 | ≈ 74.04 | ≈ 418.25 |
+| Real Mundial 2026 (Lab 9) | 980 | 7 | ≈ 7.314 | ≈ 1,045.1 | ≈ 6,371 |
 
 **Costo efectivo por estampa nueva vía canje:**
 
@@ -166,8 +276,16 @@ pip install numpy matplotlib jupyter
 
 ```bash
 # Laboratorio 7
+python etapa1.py
+python etapa2.py
 jupyter notebook laboratorio7_panini.ipynb
 
 # Laboratorio 8
+python etapa3.py
+python etapa4.py
 jupyter notebook laboratorio8_panini.ipynb
+
+# Laboratorio 9
+python etapa5.py
+jupyter notebook laboratorio9_panini.ipynb
 ```
